@@ -1,0 +1,35 @@
+#Server Terminal 
+
+sudo apt-get update
+sudo apt-get install xinetd
+sudo apt-get install telnetd
+sudo nano /etc/inetd.conf
+           telnet stream tcp nowait telnetd /usr/sbin/tcpd /usr/sbin/in.telnetd
+sudo nano /etc/xinetd.conf
+           defaults
+           {
+           instances = 60
+           log_type = SYSLOG authpriv
+           log_on_success = HOST PID
+           log_on_failure = HOST
+           cps = 25 30
+           }
+sudo nano /etc/xinetd.d/telnet
+           service telnet
+           {
+           disable = no
+           flags = REUSE
+           socket_type = stream
+           wait = no
+           user = root
+           server = /usr/sbin/in.telnetd
+           log_on_failure += USERID
+           }
+sudo /etc/init.d/xinetd restart
+
+
+#Client Terminal
+ 
+ telnet 127.0.0.1
+ or
+ telnet 10.0.2.15
