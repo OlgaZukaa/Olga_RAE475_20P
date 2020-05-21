@@ -1,0 +1,96 @@
+SERVER PART
+
+server.py
+import http.server
+import socketserver
+
+# apstradat pieprasijumu no clienta uz serveru
+handler = http.server.SimpleHTTPRequestHandler
+
+# definejam servera portu
+with socketserver.TCPServer(("", 1024), handler) as httpd:
+    # noturam serveru aktivu, kamer neparadisies pieprasijums no klienta
+    httpd.serve_forever()
+
+Dockerfile
+
+FROM python:latest
+
+# importejam failus uz mapi "srv"
+ADD server.py /srv/
+ADD index.html /srv/
+
+# samainam docker bazes direktoriju un "srv" mapi.
+WORKDIR /srv/
+
+index.html
+
+Welcome to Olgas docker-compose Client-Server connection!
+
+
+CLIENT PART
+
+client.py
+
+# importejam python sistemas urllib biblioteku
+import urllib.request
+
+# definejam lokalo serveri un to portu
+fp = urllib.request.urlopen("http://localhost:1024/")
+
+# iekodejam un atkodejam servera atbildes zinojumu, kodesana notiek ar utf8
+encodedContent = fp.read()
+decodedContent = encodedContent.decode("utf8")
+
+# izvadam html koda zinojumu
+print(decodedContent)
+
+
+Dockerfile
+
+FROM python:latest
+
+
+# importejam python failu client.py uz "cli" mapi.
+ADD client.py /cli/
+
+
+# samainam docker image bazes direktoriju un "cli" mapi.
+WORKDIR /cli/
+
+
+docker-compose
+
+version: "3"
+
+# lai stradatu ar docker compose nosakam servisus, kur katrs serviss nosaka 1 konteineru
+services:
+ 
+
+  # izveidojam servera konteineru
+  server:
+    # definejam celu lidz dockerfile
+    build: srv/
+
+    # komanda, kura tiks izpildita, kas tiks izveidots attels
+    command: python ./server.py
+
+    # nosakam masinas un konteinera portus
+    ports:
+      - 1024:1024
+
+  # izveidojam klienta konteineru
+  client:
+    # definejam celu lidz dockerfile
+    build: cli/
+
+    # komanda, kura tiks izpildita, kas tiks izveidots attels
+    command: python ./client.py
+
+    # ar so mes nosakam ka koteineris var pieslegties localhostam
+    network_mode: host
+
+    # ar so nosakam, ka klienta serviss ieslegsies tad, kad serveris bus gatavs
+    depends_on:
+      - server
+
