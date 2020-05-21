@@ -1,1 +1,92 @@
+UDP SERVER PART
 
+server.py
+
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+address = ("127.0.0.1", 1030)
+s.bind(address)
+
+while True:
+    data, addr = s.recvfrom(1030)
+    print (data)
+    print (addr)
+
+Dockerfile
+
+
+FROM python:latest
+
+# importejam failus uz mapi "server"
+ADD UDPserver.py /server/
+ADD index.html /server/
+
+# samainam docker bazes direktoriju un "server" mapi.
+WORKDIR /server/
+
+
+index.html
+
+Welcome to Olgas docker-compose Python UDP server!
+
+
+UDP CLIENT PART
+
+
+client.py
+
+import socket
+
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.sendto(bytes("Hello!", "utf-8"), ("127.0.0.1", 1030))
+
+Dockerfile
+
+FROM python:latest
+
+
+# importejam python failu UDPclient.py uz "client" mapi.
+ADD UDPclient.py /client/
+
+
+# samainam docker image bazes direktoriju un "client" mapi.
+WORKDIR /client/
+
+
+docker-compose
+
+
+
+version: "3"
+
+# lai stradatu ar docker compose nosakam servisus, kur katrs serviss nosaka 1 konteineru
+services:
+ 
+
+  # izveidojam servera konteineru
+  server:
+    # definejam celu lidz dockerfile
+    build: server/
+
+    # komanda, kura tiks izpildita, kas tiks izveidots attels
+    command: python ./UDPserver.py
+
+    # nosakam masinas un konteinera portus
+    ports:
+      - 1030:1030
+
+  # izveidojam klienta konteineru
+  client:
+    # definejam celu lidz dockerfile
+    build: client/
+
+    # komanda, kura tiks izpildita, kas tiks izveidots attels
+    command: python ./UDPclient.py
+
+    # ar so mes nosakam ka koteineris var pieslegties localhostam
+    network_mode: host
+
+    # ar so nosakam, ka klienta serviss ieslegsies tad, kad serveris bus gatavs
+    depends_on:
+      - server
