@@ -1,3 +1,5 @@
+Docker-compose.yml
+
 version: "3"
 
 # lai stradatu ar docker compose nosakam servisus, kur katrs serviss nosaka 1 konteineru
