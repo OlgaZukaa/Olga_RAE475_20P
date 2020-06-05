@@ -1,0 +1,20 @@
+version: "3"
+
+# lai stradatu ar docker compose nosakam servisus, kur katrs serviss nosaka 1 konteineru
+services:
+# izveidojam servera konteineru
+  server:
+# definejam celu lidz dockerfile
+    build: server/
+# komanda, kura tiks izpildita, kas tiks izveidots attels
+    command: python ./telnetserver.py
+# nosakam masinas un konteinera portus
+    ports:
+      - 1030:1030
+# atkærtojam ar klienta pusi
+  client:
+    build: client/
+    command: python ./telnetclient.py
+    network_mode: host
+    depends_on:
+      - server
